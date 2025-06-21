@@ -1,0 +1,38 @@
+version: '3.8'
+services:
+  cadastro-db:
+    image: postgres
+    container_name: cadastro-db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: cadastro_service
+    ports:
+      - "5432:5432"
+    volumes:
+      - cadastro-data:/var/lib/postgresql/data
+    networks:
+      - rede-compartilhada
+
+  cadastro-service:
+    build: .
+    container_name: cadastro-service
+    restart: always
+    depends_on:
+      - cadastro-db
+    ports:
+      - "5032:5032"
+    volumes:
+      - .:/app
+    networks:
+      - rede-compartilhada
+    env_file:
+      - .env
+
+volumes:
+  cadastro-data:
+
+networks:
+  rede-compartilhada:
+    driver: bridge

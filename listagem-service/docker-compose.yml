@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  listagem-db:
+    image: postgres
+    container_name: listagem-db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: listagem_service
+    ports:
+      - "5433:5432"
+    volumes:
+      - listagem-data:/var/lib/postgresql/data
+    networks:
+      - rede-compartilhada
+
+  listagem-service:
+    build: .
+    container_name: listagem-service
+    restart: always
+    depends_on:
+      - listagem-db
+    ports:
+      - "5033:5033"
+    volumes:
+      - .:/app
+    networks:
+      - rede-compartilhada
+    env_file:
+      - .env
+
+volumes:
+  listagem-data:
+
+networks:
+  rede-compartilhada:
+    driver: bridge

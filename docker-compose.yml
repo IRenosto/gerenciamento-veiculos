@@ -1,0 +1,76 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - rede-compartilhada
+
+  cadastro-db:
+    image: postgres
+    container_name: cadastro-db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: cadastro_service
+    volumes:
+      - cadastro-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - rede-compartilhada
+
+  listagem-db:
+    image: postgres
+    container_name: listagem-db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: listagem_service
+    volumes:
+      - listagem-data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    networks:
+      - rede-compartilhada
+
+  cadastro-service:
+    build: ./cadastro-service
+    container_name: cadastro-service
+    ports:
+      - "5032:5032"
+    depends_on:
+      - redis
+      - cadastro-db
+    env_file:
+      - ./cadastro-service/.env
+    networks:
+      - rede-compartilhada
+
+  listagem-service:
+    build: ./listagem-service
+    container_name: listagem-service
+    depends_on:
+      - redis
+      - listagem-db
+    ports:
+      - "5033:5033"
+    volumes:
+      - ./listagem-service:/app
+    env_file:
+      - ./listagem-service/.env
+    networks:
+      - rede-compartilhada
+
+networks:
+  rede-compartilhada:
+    driver: bridge
+
+volumes:
+  cadastro-data:
+  listagem-data:
